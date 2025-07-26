@@ -6,4 +6,5 @@ crash.log
 *.exe
 *.zip
 *.bak
+*.txt
 terraform/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.37.0/windows_amd64/terraform-provider-azurerm_v4.37.0_x5.exe
