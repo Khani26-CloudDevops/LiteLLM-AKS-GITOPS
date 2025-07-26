@@ -1,0 +1,5 @@
+apiVersion: v2
+name: phoenix
+description: Helm chart for Phoenix monitoring service
+version: 0.1.0
+appVersion: "latest"
