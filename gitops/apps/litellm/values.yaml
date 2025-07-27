@@ -1,24 +1,29 @@
+# LiteLLM Proxy Core Configuration
 replicaCount: 1
 image:
   repository: ghcr.io/berriai/litellm
   tag: v1.74.7-stable.patch.2
 
 service:
-  enabled: true
   type: LoadBalancer
   port: 4000
 
-env:
+# LiteLLM Proxy Specific Settings
+litellmConfig:
+  masterKey: "sk-1234"  # Rotate this in production!
+  environment: "production"
+  completionModel: "gpt-3.5-turbo"  # Default model
+  allowedModels:  # Whitelist models
+    - "gpt-3.5-turbo"
+    - "gpt-4"
+    - "claude-2"
+    - "ollama"
 
-  # Required configurations
-  LITELLM_PROXY_API_API: "sk-1234"
-  LITELLM_PROXY_API_BASE: "http://localhost:4000"  # Must match model_name above
-  PUBLIC_MODEL_HUB: "True"
-
+# Resource Limits
 resources:
   requests:
-    cpu: 250m
-    memory: 500Mi
+    cpu: "250m"
+    memory: "512Mi"
   limits:
-    cpu: 1
-    memory: 2Gi
+    cpu: "1"
+    memory: "2Gi"

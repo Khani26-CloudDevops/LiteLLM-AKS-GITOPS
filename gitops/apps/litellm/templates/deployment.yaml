@@ -18,9 +18,22 @@ spec:
           ports:
             - containerPort: {{ .Values.service.port }}
           env:
-            {{- range $key, $value := .Values.env }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
+            # Core Proxy Configuration
+            - name: LITELLM_MASTER_KEY
+              value: {{ .Values.litellmConfig.masterKey | quote }}
+            - name: LITELLM_ENVIRONMENT
+              value: {{ .Values.litellmConfig.environment | quote }}
+            
+            # Model Configuration
+            - name: LITELLM_COMPLETION_MODEL
+              value: {{ .Values.litellmConfig.completionModel | quote }}
+            - name: LITELLM_ALLOWED_MODELS
+              value: {{ join "," .Values.litellmConfig.allowedModels | quote }}
+            
+            # Network Binding
+            - name: LITELLM_HOST
+              value: "0.0.0.0"
+            - name: LITELLM_PORT
+              value: {{ .Values.service.port | quote }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
