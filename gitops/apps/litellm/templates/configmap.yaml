@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    model_list:
+  {{- range .Values.litellm.config.model_list }}
+    - model_name: {{ .model_name | quote }}
+      litellm_params:
+        model: {{ .litellm_params.model | quote }}
+        api_base: {{ .litellm_params.api_base | quote }}
+  {{- end }}
+    general_settings:
+      master_key: {{ .Values.litellm.masterKey | quote }}

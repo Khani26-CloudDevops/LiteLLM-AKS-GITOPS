@@ -1,0 +1,125 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: litellm-poc
+data:
+  config.yaml: |
+    model_list:
+      # Hugging Face Free Models (no API key needed)
+      - model_name: "gpt-3.5-turbo"
+        litellm_params:
+          model: "huggingface/microsoft/DialoGPT-medium"
+          api_base: "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+      
+      - model_name: "llama2"
+        litellm_params:
+          model: "huggingface/meta-llama/Llama-2-7b-chat-hf"
+          api_base: "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat-hf"
+          
+      - model_name: "codellama"
+        litellm_params:
+          model: "huggingface/codellama/CodeLlama-7b-Instruct-hf"
+          api_base: "https://api-inference.huggingface.co/models/codellama/CodeLlama-7b-Instruct-hf"
+          
+      - model_name: "mistral"
+        litellm_params:
+          model: "huggingface/mistralai/Mistral-7B-Instruct-v0.1"
+          api_base: "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+
+      # OpenRouter Free Models (no API key for some models)
+      - model_name: "openrouter/free"
+        litellm_params:
+          model: "openrouter/nousresearch/nous-capybara-7b:free"
+          api_base: "https://openrouter.ai/api/v1"
+
+    general_settings:
+      master_key: "sk-1234"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-proxy
+  namespace: litellm-poc
+  labels:
+    app: litellm-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-proxy
+  template:
+    metadata:
+      labels:
+        app: litellm-proxy
+    spec:
+      containers:
+      - name: litellm-proxy
+        image: ghcr.io/berriai/litellm:v1.74.7-stable.patch.2
+        command: ["litellm"]
+        args: 
+          - "--config"
+          - "/app/config.yaml"
+          - "--port"
+          - "4000"
+          - "--host"
+          - "0.0.0.0"
+        ports:
+        - containerPort: 4000
+          name: http
+        env:
+        - name: LITELLM_MASTER_KEY
+          value: "sk-1234"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+            httpHeaders:
+            - name: Authorization
+              value: "Bearer sk-1234"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health  
+            port: 4000
+            httpHeaders:
+            - name: Authorization
+              value: "Bearer sk-1234"
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: config-volume
+        configMap:
+          name: litellm-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm-proxy
+  namespace: litellm-poc
+  labels:
+    app: litellm-proxy
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 4000
+    targetPort: 4000
+    protocol: TCP
+    name: http
+  selector:
+    app: litellm-proxy
