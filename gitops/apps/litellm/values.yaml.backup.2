@@ -1,0 +1,48 @@
+replicaCount: 1
+image:
+  repository: ghcr.io/berriai/litellm
+  tag: v1.74.7-stable.patch.2
+
+service:
+  enabled: true
+  type: LoadBalancer
+  port: 4000
+
+env:
+  MODEL_LIST: |
+    [{
+      "model_name": "llama2",
+      "litellm_provider": "ollama",  # Official provider name per docs
+      "base_url": "http://ollama.litellm-poc.svc.cluster.local:11434",
+      "api_base": "http://ollama.litellm-poc.svc.cluster.local:11434/api",
+      "litellm_params": {
+        "model": "llama2",  
+        "keep_alive": "8m",
+        "temperature": 0.7  # Optional default params
+      },
+      "model_info": {
+        "id": "ollama-llama2",
+        "supports_function_calling": true,
+        "mode": "chat"
+      }
+    }]
+  
+  # Required configurations
+  LITELLM_API_BASE: "http://ollama.litellm-poc.svc.cluster.local:11434/api"
+  LITELLM_PRELOAD_MODELS: "llama2"  # Must match model_name above
+  LITELLM_TELEMETRY: "False"
+  LITELLM_LOG: "DEBUG"
+  PUBLIC_MODEL_HUB: "True"
+
+initContainers:
+- name: wait-for-ollama
+  image: curlimages/curl
+  command: ['sh', '-c', 'until curl -s http://ollama.litellm-poc.svc.cluster.local:11434 >/dev/null; do sleep 5; done']
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 500Mi
+  limits:
+    cpu: 1
+    memory: 2Gi
