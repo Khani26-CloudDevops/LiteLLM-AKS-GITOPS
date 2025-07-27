@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: litellm
+  namespace: argocd
+spec:
+  project: litellm-project
+  source:
+    repoURL: "https://github.com/Khani26-CloudDevops/LiteLLM-AKS-GITOPS.git"
+    path: gitops/apps/litellm
+    targetRevision: main
+    helm: {}  # Empty override - uses values.yaml exclusively
+  destination:
+    server: "https://aks-litellm-muzeumix.hcp.eastus.azmk8s.io"
+    namespace: litellm-poc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
