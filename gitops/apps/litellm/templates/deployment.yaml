@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -13,27 +16,48 @@ spec:
         app: {{ .Chart.Name }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          ports:
-            - containerPort: {{ .Values.service.port }}
-          env:
-            # Core Proxy Configuration
-            - name: LITELLM_MASTER_KEY
-              value: {{ .Values.litellmConfig.masterKey | quote }}
-            - name: LITELLM_ENVIRONMENT
-              value: {{ .Values.litellmConfig.environment | quote }}
-            
-            # Model Configuration
-            - name: LITELLM_COMPLETION_MODEL
-              value: {{ .Values.litellmConfig.completionModel | quote }}
-            - name: LITELLM_ALLOWED_MODELS
-              value: {{ join "," .Values.litellmConfig.allowedModels | quote }}
-            
-            # Network Binding
-            - name: LITELLM_HOST
-              value: "0.0.0.0"
-            - name: LITELLM_PORT
-              value: {{ .Values.service.port | quote }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["litellm"]
+        args:
+          - "--config"
+          - "/app/config.yaml"
+          - "--port"
+          - "4000"
+          - "--host"
+          - "0.0.0.0"
+        ports:
+        - containerPort: 4000
+          name: http
+        env:
+        - name: LITELLM_MASTER_KEY
+          value: {{ .Values.litellm.masterKey | quote }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+            httpHeaders:
+            - name: Authorization
+              value: "Bearer {{ .Values.litellm.masterKey }}"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+            httpHeaders:
+            - name: Authorization
+              value: "Bearer {{ .Values.litellm.masterKey }}"
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Chart.Name }}-config

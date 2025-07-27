@@ -1,5 +1,6 @@
 apiVersion: v2
 name: litellm
-description: Helm chart for Lite LLM service
+description: A simple Helm chart for LiteLLM Proxy POC
+type: application
 version: 0.1.0
-appVersion: "v1.74.7"    #Fake version
+appVersion: "v1.74.7-stable.patch.2"

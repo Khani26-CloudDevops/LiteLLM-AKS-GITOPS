@@ -1,29 +1,86 @@
-# LiteLLM Proxy Core Configuration
+# Default values for litellm-proxy
+# This is a YAML-formatted file.
+
 replicaCount: 1
+
 image:
   repository: ghcr.io/berriai/litellm
-  tag: v1.74.7-stable.patch.2
+  tag: "v1.74.7-stable.patch.2"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
 
 service:
   type: LoadBalancer
   port: 4000
+  targetPort: 4000
+  protocol: TCP
 
-# LiteLLM Proxy Specific Settings
-litellmConfig:
-  masterKey: "sk-1234"  # Rotate this in production!
-  environment: "production"
-  completionModel: "gpt-3.5-turbo"  # Default model
-  allowedModels:  # Whitelist models
-    - "gpt-3.5-turbo"
-    - "gpt-4"
-    - "claude-2"
-    - "ollama"
+container:
+  port: 4000
+  host: "0.0.0.0"
 
-# Resource Limits
+# LiteLLM Configuration
+litellm:
+  masterKey: "sk-1234"
+  config:
+    model_list:
+      - model_name: "gpt-3.5-turbo"
+        litellm_params:
+          model: "gpt-3.5-turbo"
+          api_key: "fake-key"
+      - model_name: "gpt-4"
+        litellm_params:
+          model: "gpt-4"
+          api_key: "fake-key"
+      - model_name: "llama2"
+        litellm_params:
+          model: "replicate/llama-2-70b-chat"
+          api_key: "fake-key"
+      - model_name: "claude-3"
+        litellm_params:
+          model: "claude-3-sonnet-20240229"
+          api_key: "fake-key"
+    general_settings:
+      master_key: "sk-1234"
+
+# Health check configuration
+healthCheck:
+  liveness:
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 30
+  readiness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 15
+
+# Resource limits and requests
 resources:
-  requests:
-    cpu: "250m"
-    memory: "512Mi"
   limits:
-    cpu: "1"
-    memory: "2Gi"
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Node selector, tolerations and affinity
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Pod Security Context
+podSecurityContext: {}
+
+# Security Context
+securityContext: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Service account
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
