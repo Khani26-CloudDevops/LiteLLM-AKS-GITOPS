@@ -11,7 +11,7 @@ spec:
     targetRevision: main
     helm: {}  # Empty override - uses values.yaml exclusively
   destination:
-    server: "https://aks-litellm-muzeumix.hcp.eastus.azmk8s.io"
+    server: "aks-litellm-muzeumix.hcp.eastus.azmk8s.io"
     namespace: litellm-poc
   syncPolicy:
     automated:
