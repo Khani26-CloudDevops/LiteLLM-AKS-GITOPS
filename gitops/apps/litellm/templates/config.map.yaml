@@ -10,7 +10,7 @@ data:
       - model_name: {{ .name | quote }}
         litellm_params:
           model: {{ .model | quote }}
-          api_key: {{ .apiKey | quote }}
+          api_base: {{ .apiBase | quote }}
 {{- end }}
     general_settings:
       master_key: {{ .Values.litellm.masterKey | quote }}
