@@ -14,3 +14,7 @@ data:
   {{- end }}
     general_settings:
       master_key: {{ .Values.litellm.masterKey | quote }}
+  {{- if .Values.phoenix.enabled }}
+      otel: true
+      custom_auth: phoenix
+  {{- end }}    

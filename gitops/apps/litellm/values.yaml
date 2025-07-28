@@ -21,6 +21,10 @@ container:
   port: 4000
   host: "0.0.0.0"
 
+phoenix:
+  enabled: true
+  endpoint: "http://phoenix.litellm-poc.svc.cluster.local:6006" 
+
 # LiteLLM Configuration
 litellm:
   masterKey: "sk-1234"
