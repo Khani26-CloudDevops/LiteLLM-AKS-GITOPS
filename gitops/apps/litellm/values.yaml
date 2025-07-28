@@ -44,8 +44,8 @@ litellm:
           api_base: "https://api-inference.huggingface.co/models/codellama/CodeLlama-7b-Instruct-hf"
       - model_name: "mistral"
         litellm_params:
-          model: "huggingface/mistralai/Mistral-7B-Instruct-v0.1"
-          api_base: "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+          model: "huggingface/mistralai/Mistral-7B-Instruct-v0.3"
+          api_base: "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
     general_settings:
       master_key: "sk-1234"
 
