@@ -33,6 +33,17 @@ spec:
         env:
         - name: LITELLM_MASTER_KEY
           value: {{ .Values.litellm.masterKey | quote }}
+{{- if .Values.phoenix.enabled }}
+        - name: PHOENIX_HOST
+          value: {{ .Values.phoenix.endpoint | quote }}
+        - name: PHOENIX_PROJECT_NAME
+          value: "litellm-proxy"
+        - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+          value: "{{ .Values.phoenix.endpoint }}/v1/traces"
+        - name: OTEL_EXPORTER_OTLP_TRACES_HEADERS
+          value: "Content-Type=application/x-protobuf"
+{{- end }}
+
         volumeMounts:
         - name: config-volume
           mountPath: /app/config.yaml
